@@ -1,192 +1,240 @@
-# How to Create a Pulp CLI Module Similar to `pulp-cli-console`
+# How to Create a Pulp CLI Module Using Cookiecutter
 
-This guide provides a comprehensive walkthrough for creating a Pulp CLI module similar to `pulp-cli-console`. It includes details on the required files, directory structure, and examples to help you build your own module.
+This guide shows you how to quickly create a Pulp CLI module using the provided cookiecutter templates. Instead of manually creating all the required files, the cookiecutter bootstrap process will automatically generate the correct structure and files for you.
 
 ---
 
 ## 1. Overview
 
-A Pulp CLI module extends the functionality of the Pulp CLI by adding custom commands and features. For example, `pulp-cli-console` provides administrative tools for managing tasks, vulnerabilities, and performance monitoring.
+Pulp CLI modules extend the functionality of the Pulp CLI by adding custom commands and features. The pulp-cli project includes cookiecutter templates that make it easy to bootstrap a new module with the correct structure and configuration.
 
 ---
 
-## 2. Directory Structure
+## 2. Prerequisites
 
-Here is the recommended directory structure for your module:
+Before you begin, ensure you have the following installed:
+
+```bash
+pip install cookiecutter click pyyaml tomlkit
+```
+
+---
+
+## 3. Bootstrap a New Pulp CLI Module
+
+### 3.1 Using the Bootstrap Template
+
+Navigate to the directory where you want to create your new module and run:
+
+```bash
+# Clone the pulp-cli repository if you don't have it already
+git clone https://github.com/pulp/pulp-cli.git
+
+# Navigate to the cookiecutter directory
+cd pulp-cli/cookiecutter
+
+# Run the bootstrap script
+python apply_templates.py --bootstrap
+```
+
+### 3.2 Answer the Prompts
+
+The cookiecutter will prompt you for several values:
+
+```
+  [1/7] app_label (noname):
+  [2/7] glue [y/n] (y): 
+  [3/7] docs [y/n] (n): 
+  [4/7] translations [y/n] (n): 
+  [5/7] version (0.0.1.dev0): 
+  [6/7] repository (https://github.com/pulp/<app_label>): 
+  [7/7] test_matrix (default): 
+```
+
+- **app_label**: The name of your module (used for imports and commands)
+- **glue**: Include pulp-glue integration (recommended)
+- **docs**: Include documentation setup
+- **translations**: Include translation support
+- **version**: Starting version number
+- **repository**: Git repository URL for your project
+- **test_matrix**: Test matrix configuration for CI
+
+### 3.3 Apply Additional Templates
+
+After bootstrapping, the script automatically applies CI templates and (if selected) documentation templates:
+
+```
+Bootstrap new CLI plugin.
+New plugin repository created in pulp-cli-my-module.
+Apply ci template
+Apply docs template
+```
+
+---
+
+## 4. Resulting Directory Structure
+
+After running the bootstrap, you'll have a fully structured project. Here's the actual structure generated for an example module named `my-module`:
 
 ```plaintext
-my-pulp-cli-module/
-├── my_pulp_cli_module/
-│   ├── __init__.py
-│   ├── cli/
-│   │   └── my_command/
-│   │       ├── __init__.py  # Registers commands
-│   │       └── task.py  # Example subcommand
-│   └── glue/
-│       ├── __init__.py
-│       └── context.py
-├── tests/
-│   ├── __init__.py
-│   ├── conftest.py
-│   └── test_task.py
-├── pyproject.toml
-├── README.md
-├── MANIFEST.in
-└── requirements.txt
+pulp-cli-my-module/
+├── .ci/                          # CI configuration files
+├── .github/                      # GitHub workflows
+│   └── workflows/
+│       └── test.yml
+├── CHANGES/                      # Directory for changelog entries
+├── CHANGES.md                    # Changelog summary
+├── Makefile                      # Build automation
+├── lint_requirements.txt         # Dependencies for linting
+├── lower_bounds_constraints.lock # Minimum dependency versions
+├── pulp-glue-my-module/           # Glue package (if selected)
+│   ├── pulp_glue/
+│   │   └── my-module/
+│   │       ├── __init__.py
+│   │       ├── context.py        # API context class
+│   │       └── py.typed          # Type checking marker
+│   └── pyproject.toml            # Glue package configuration
+├── pulpcore/                     # CLI implementation
+│   └── cli/
+│       └── my-module/
+│           ├── __init__.py       # Main entry point
+│           └── py.typed          # Type checking marker
+├── pyproject.toml                # Project configuration
+└── test_requirements.txt         # Testing dependencies
 ```
+
+### 4.1 Key Files and Directories
+
+The bootstrap process creates several important directories and files:
+
+- `pulpcore/cli/my-module/__init__.py`: Main entry point where you define command groups
+- `pulp-glue-my-module/pulp_glue/my-module/context.py`: API context class for interacting with Pulp
+- `pyproject.toml`: Project metadata, dependencies, and build configuration
+- `CHANGES/`: Directory for changelog fragments (.feature, .bugfix, etc. files)
+- `.github/workflows/`: CI configuration for automated testing
 
 ---
 
-## 3. Key Files and Their Purpose
+## 5. Customizing Your Module
 
-### 3.1 `pyproject.toml`
+### 5.1 Modify Command Group
 
-Defines the project metadata and dependencies. Example:
-
-```toml
-[build-system]
-requires = ["setuptools>=42", "wheel"]
-build-backend = "setuptools.build_meta"
-
-[project]
-name = "my-pulp-cli-module"
-version = "0.1.0"
-description = "A custom Pulp CLI module"
-readme = "README.md"
-requires-python = ">=3.8"
-dependencies = [
-    "pulp-cli",
-    "click"
-]
-
-[project.entry-points."pulp_cli.plugins"]
-my_module = "my_pulp_cli_module.cli"
-```
-
-### 3.2 `cli/my_command/__init__.py`
-
-Registers the CLI commands with the Pulp CLI.
+Edit `pulpcore/cli/my_module/__init__.py` to define your command groups and add functionality:
 
 ```python
-from my_pulp_cli_module.cli.my_command.task import attach_task_commands
+import typing as t
 
-def attach_my_commands(main):
-    """Attach all subcommands to the main CLI group."""
-    @main.group()
-    def my_command():
-        """My custom Pulp CLI commands."""
-        pass
+import click
+from pulp_cli.generic import pulp_group
+from pulp_glue.common.i18n import get_translation
 
-    attach_task_commands(my_command)
+# Import your command modules
+from pulpcore.cli.my_module.my_command import my_command_group
+
+translation = get_translation(__package__)
+_ = translation.gettext
+
+__version__ = "0.1.0"  # Matches version in pyproject.toml
+
+
+@pulp_group(name="my_module")
+def my_module_group() -> None:
+    """My module commands."""
+    pass
+
+
+def mount(main: click.Group, **kwargs: t.Any) -> None:
+    # Add your command groups here
+    my_module_group.add_command(my_command_group)
+    main.add_command(my_module_group)
 ```
 
-### 3.3 `cli/my_command/task.py`
+### 5.2 Create Command Modules
 
-This file provides an example of a subcommand under `my_command`. It demonstrates how to define and attach subcommands to the main CLI group.
+Create a new file for your commands, e.g., `pulpcore/cli/my_module/my_command.py`:
 
 ```python
 import click
-from pulp_glue.common.context import PulpContext
-from pulpcore.cli.common.generic import pass_pulp_context
-
-def attach_task_commands(group: click.Group):
-    """Attach example subcommands."""
-    @group.group()
-    @pass_pulp_context
-    def task(ctx, pulp_ctx: PulpContext):
-        """Example subcommand group."""
-        pass
-
-    @task.command()
-    @click.option("--limit", type=int, help="Limit the number of items shown")
-    @pass_pulp_context
-    def list(pulp_ctx: PulpContext, limit: int):
-        """Example list command."""
-        items = pulp_ctx.list_items(limit=limit)  # Replace with actual logic
-        click.echo(items)
-```
-
-### 3.4 `glue/context.py`
-
-Provides a custom context for interacting with the Pulp API.
-
-```python
+from pulp_cli.common.context import pass_pulp_context
 from pulp_glue.common.context import PulpContext
 
-class MyPulpContext(PulpContext):
-    def list_tasks(self, limit):
-        return self.call_api("/tasks", params={"limit": limit})
-```
 
-### 3.5 `tests/conftest.py`
+@click.group()
+def my_command_group():
+    """My custom commands."""
+    pass
 
-Sets up test fixtures.
 
-```python
-import pytest
-from my_pulp_cli_module.glue.context import MyPulpContext
-
-@pytest.fixture
-def pulp_context():
-    return MyPulpContext(base_url="http://test-server", username="admin", password="password")
-```
-
-### 3.6 `tests/test_task.py`
-
-Tests the task commands.
-
-```python
-from click.testing import CliRunner
-from my_pulp_cli_module.cli.commands.task import list
-
-def test_list_tasks(pulp_context):
-    runner = CliRunner()
-    result = runner.invoke(list, ["--limit", "10"], obj=pulp_context)
-    assert result.exit_code == 0
-    assert "tasks" in result.output
+@my_command_group.command()
+@click.option("--limit", type=int, help="Limit the number of items")
+@pass_pulp_context
+def list(pulp_ctx: PulpContext, limit: int):
+    """List items."""
+    # Implement your command logic here
+    click.echo(f"Listing items with limit: {limit}")
 ```
 
 ---
 
-## 4. Development Workflow
+## 6. Development Workflow
 
-### Step 1: Install Dependencies
+### 6.1 Install Your Module in Development Mode
 
 ```bash
+cd pulp-cli-my-module
 pip install -e .
 ```
 
-### Step 2: Run Tests
+### 6.2 Test Your Commands
+
+After installation, you can test your commands:
 
 ```bash
-pytest
-```
-
-### Step 3: Test the CLI
-
-```bash
-pulp my-module task list --limit 10
+pulp my-module my-command list --limit 10
 ```
 
 ---
 
-## 5. Best Practices
+## 7. Project Maintenance
 
-1. **Follow PEP 8**: Ensure your code adheres to Python's style guide.
-2. **Write Tests**: Cover all commands and edge cases.
-3. **Use Click**: Leverage Click's features for robust CLI development.
-4. **Document**: Provide clear documentation for users.
+### 7.1 Adding Changelog Entries
 
----
-
-## 6. Example Usage
-
-After installation, users can run:
+The project uses Towncrier to manage the changelog. To add a changelog entry, create a new file in the `CHANGES/` directory with an appropriate extension:
 
 ```bash
-pulp my-module task list --limit 10
+# Create a changelog entry for a new feature
+echo "Added new command for syncing repositories" > CHANGES/123.feature
+
+# Example for a bugfix
+echo "Fixed authentication issue with token-based login" > CHANGES/124.bugfix
+```
+
+The filename should be unique (typically use a ticket/issue number) with one of these extensions:
+- `.feature` - For new features
+- `.bugfix` - For bug fixes
+- `.doc` - For documentation improvements
+- `.removal` - For deprecations or removals
+- `.misc` - For other changes
+
+When the project is released, these fragments will be automatically compiled into a formatted changelog in `CHANGES.md` using the Towncrier template.
+
+### 7.2 Update Templates
+
+If you need to update the project structure with new template changes:
+
+```bash
+python ~/pulp-cli/cookiecutter/apply_templates.py
 ```
 
 ---
 
-By following this guide, you can create a fully functional Pulp CLI module that integrates seamlessly with the Pulp ecosystem.
+## 8. Best Practices
+
+1. **Follow the Project Structure**: Maintain the structure created by the cookiecutter.
+2. **Use Click Decorators**: Leverage Click's features for robust CLI commands.
+3. **Keep Documentation Updated**: If you enabled docs, maintain them.
+4. **Use the Glue Layer**: Keep API interaction code in the glue layer for better separation.
+
+---
+
+By using the cookiecutter bootstrap process, you can quickly set up a properly structured Pulp CLI module and focus on implementing your custom commands rather than worrying about project structure.
