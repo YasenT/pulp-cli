@@ -1,16 +1,16 @@
 # How to Create a Pulp CLI Module Using Cookiecutter
 
-This guide shows you how to quickly create a Pulp CLI module using the provided cookiecutter templates. Instead of manually creating all the required files, the cookiecutter bootstrap process will automatically generate the correct structure and files for you.
+This guide shows you how to create a Pulp CLI module using the provided cookiecutter templates. Instead of manually creating all the required files, the cookiecutter bootstrap process will automatically generate the correct structure and files for you.
 
 ---
 
-## 1. Overview
+## Overview
 
 Pulp CLI modules extend the functionality of the Pulp CLI by adding custom commands and features. The pulp-cli project includes cookiecutter templates that make it easy to bootstrap a new module with the correct structure and configuration.
 
 ---
 
-## 2. Prerequisites
+## Prerequisites
 
 Before you begin, ensure you have the following installed:
 
@@ -20,9 +20,9 @@ pip install cookiecutter click pyyaml tomlkit
 
 ---
 
-## 3. Bootstrap a New Pulp CLI Module
+## Bootstrap a New Pulp CLI Module
 
-### 3.1 Using the Bootstrap Template
+### Using the Bootstrap Template
 
 Navigate to the directory where you want to create your new module and run:
 
@@ -30,80 +30,16 @@ Navigate to the directory where you want to create your new module and run:
 # Clone the pulp-cli repository if you don't have it already
 git clone https://github.com/pulp/pulp-cli.git
 
-# Navigate to the cookiecutter directory
-cd pulp-cli/cookiecutter
-
 # Run the bootstrap script
-python apply_templates.py --bootstrap
-```
-
-### 3.2 Answer the Prompts
-
-The cookiecutter will prompt you for several values:
+pulp-cli/cookiecutter/apply_templates.py --bootstrap
 
 ```
-  [1/7] app_label (noname):
-  [2/7] glue [y/n] (y): 
-  [3/7] docs [y/n] (n): 
-  [4/7] translations [y/n] (n): 
-  [5/7] version (0.0.1.dev0): 
-  [6/7] repository (https://github.com/pulp/<app_label>): 
-  [7/7] test_matrix (default): 
-```
 
-- **app_label**: The name of your module (used for imports and commands)
-- **glue**: Include pulp-glue integration (recommended)
-- **docs**: Include documentation setup
-- **translations**: Include translation support
-- **version**: Starting version number
-- **repository**: Git repository URL for your project
-- **test_matrix**: Test matrix configuration for CI
+### Answer the Prompts
 
-### 3.3 Apply Additional Templates
+You will be prompted for several values during the bootstrap process. The most important is **app_label**, which should match the Pulp component your module targets (for example, use `file` for `pulp-file`). This value determines the import paths and command names for your module. You will also see additional prompts for options such as glue integration, documentation, translations, version, repository URL, and CI configuration—answer these as appropriate for your project.
 
-After bootstrapping, the script automatically applies CI templates and (if selected) documentation templates:
-
-```
-Bootstrap new CLI plugin.
-New plugin repository created in pulp-cli-my-module.
-Apply ci template
-Apply docs template
-```
-
----
-
-## 4. Resulting Directory Structure
-
-After running the bootstrap, you'll have a fully structured project. Here's the actual structure generated for an example module named `my-module`:
-
-```plaintext
-pulp-cli-my-module/
-├── .ci/                          # CI configuration files
-├── .github/                      # GitHub workflows
-│   └── workflows/
-│       └── test.yml
-├── CHANGES/                      # Directory for changelog entries
-├── CHANGES.md                    # Changelog summary
-├── Makefile                      # Build automation
-├── lint_requirements.txt         # Dependencies for linting
-├── lower_bounds_constraints.lock # Minimum dependency versions
-├── pulp-glue-my-module/           # Glue package (if selected)
-│   ├── pulp_glue/
-│   │   └── my-module/
-│   │       ├── __init__.py
-│   │       ├── context.py        # API context class
-│   │       └── py.typed          # Type checking marker
-│   └── pyproject.toml            # Glue package configuration
-├── pulpcore/                     # CLI implementation
-│   └── cli/
-│       └── my-module/
-│           ├── __init__.py       # Main entry point
-│           └── py.typed          # Type checking marker
-├── pyproject.toml                # Project configuration
-└── test_requirements.txt         # Testing dependencies
-```
-
-### 4.1 Key Files and Directories
+### Key Files and Directories
 
 The bootstrap process creates several important directories and files:
 
@@ -115,9 +51,9 @@ The bootstrap process creates several important directories and files:
 
 ---
 
-## 5. Customizing Your Module
+## Customizing Your Module
 
-### 5.1 Modify Command Group
+### Modify Command Group
 
 Edit `pulpcore/cli/my_module/__init__.py` to define your command groups and add functionality:
 
@@ -149,7 +85,7 @@ def mount(main: click.Group, **kwargs: t.Any) -> None:
     main.add_command(my_module_group)
 ```
 
-### 5.2 Create Command Modules
+### Create Command Modules
 
 Create a new file for your commands, e.g., `pulpcore/cli/my_module/my_command.py`:
 
@@ -176,16 +112,13 @@ def list(pulp_ctx: PulpContext, limit: int):
 
 ---
 
-## 6. Development Workflow
+## Development Workflow
 
-### 6.1 Install Your Module in Development Mode
+### Install Your Module in Development Mode
 
-```bash
-cd pulp-cli-my-module
-pip install -e .
-```
+For installation instructions, see here (https://github.com/pulp/pulp-cli/blob/main/docs/user/guides/installation.md#from-a-source-checkout).
 
-### 6.2 Test Your Commands
+### Test Your Commands
 
 After installation, you can test your commands:
 
@@ -195,9 +128,9 @@ pulp my-module my-command list --limit 10
 
 ---
 
-## 7. Project Maintenance
+## Project Maintenance
 
-### 7.1 Adding Changelog Entries
+### Adding Changelog Entries
 
 The project uses Towncrier to manage the changelog. To add a changelog entry, create a new file in the `CHANGES/` directory with an appropriate extension:
 
@@ -218,23 +151,15 @@ The filename should be unique (typically use a ticket/issue number) with one of 
 
 When the project is released, these fragments will be automatically compiled into a formatted changelog in `CHANGES.md` using the Towncrier template.
 
-### 7.2 Update Templates
+### Update Templates
 
 If you need to update the project structure with new template changes:
 
 ```bash
-python ~/pulp-cli/cookiecutter/apply_templates.py
+cd pulp-cli-my-module
+../pulp-cli/cookiecutter/apply_templates.py
 ```
 
 ---
 
-## 8. Best Practices
-
-1. **Follow the Project Structure**: Maintain the structure created by the cookiecutter.
-2. **Use Click Decorators**: Leverage Click's features for robust CLI commands.
-3. **Keep Documentation Updated**: If you enabled docs, maintain them.
-4. **Use the Glue Layer**: Keep API interaction code in the glue layer for better separation.
-
----
-
-By using the cookiecutter bootstrap process, you can quickly set up a properly structured Pulp CLI module and focus on implementing your custom commands rather than worrying about project structure.
+By using the cookiecutter bootstrap process, you can set up a properly structured Pulp CLI module and focus on implementing your custom commands rather than worrying about project structure.
