@@ -128,30 +128,7 @@ pulp my-module my-command list --limit 10
 
 ---
 
-## Project Maintenance
-
-### Adding Changelog Entries
-
-The project uses Towncrier to manage the changelog. To add a changelog entry, create a new file in the `CHANGES/` directory with an appropriate extension:
-
-```bash
-# Create a changelog entry for a new feature
-echo "Added new command for syncing repositories" > CHANGES/123.feature
-
-# Example for a bugfix
-echo "Fixed authentication issue with token-based login" > CHANGES/124.bugfix
-```
-
-The filename should be unique (typically use a ticket/issue number) with one of these extensions:
-- `.feature` - For new features
-- `.bugfix` - For bug fixes
-- `.doc` - For documentation improvements
-- `.removal` - For deprecations or removals
-- `.misc` - For other changes
-
-When the project is released, these fragments will be automatically compiled into a formatted changelog in `CHANGES.md` using the Towncrier template.
-
-### Update Templates
+## Update Templates
 
 If you need to update the project structure with new template changes:
 
