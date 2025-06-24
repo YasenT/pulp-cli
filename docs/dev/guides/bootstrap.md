@@ -43,11 +43,11 @@ You will be prompted for several values during the bootstrap process. The most i
 
 The bootstrap process creates several important directories and files:
 
-- `pulpcore/cli/my-plugin/__init__.py`: Main entry point where you define command groups
-- `pulp-glue-my-plugin/pulp_glue/my-plugin/context.py`: API context class for interacting with Pulp
-- `pyproject.toml`: Project metadata, dependencies, and build configuration
-- `CHANGES/`: Directory for changelog fragments (.feature, .bugfix, etc. files)
-- `.github/workflows/`: CI configuration for automated testing
+- `pulpcore/cli/my-plugin/__init__.py`: Main entry point where you define command groups. See bellow for more details
+- `pulp-glue-my-plugin/pulp_glue/my-plugin/context.py`: API context class for interacting with Pulp. See bellow for more details
+- `pyproject.toml`: Project metadata, dependencies, and build configuration. This file contains essential project information including author details, licensing information, version numbers, package dependencies, and build system configuration. You'll need to customize the author name, email, project description, license type to match your plugin's specific requirements.
+- `CHANGES/`: Directory for changelog fragments (.feature, .bugfix, etc. files). See the [changelog update guide](https://pulpproject.org/pulpcore/docs/dev/guides/git/?h=towncrier#changelog-update) for more details.
+- `.github/workflows/`: This directory contains GitHub Actions workflow configurations for automated testing and continuous integration. These files are pre-configured and do not require modification when initially setting up your plugin development environment. The CI workflows will automatically run tests and validation checks on your plugin code when you push changes to your repository.
 
 ---
 
@@ -110,6 +110,38 @@ def list(pulp_ctx: PulpContext, limit: int):
     click.echo(f"Listing items with limit: {limit}")
 ```
 
+### Create API Context Classes
+
+Edit `pulp-glue-my-plugin/pulp_glue/my_plugin/context.py` to define context classes that handle API interactions:
+
+```python
+import typing as t
+from gettext import gettext as _
+
+from pulp_glue.common.context import PulpContext, PulpEntityContext
+
+
+class PulpMyResourceContext(PulpEntityContext):
+    """Context for working with my custom resource."""
+
+
+    def create_custom_action(self, data: t.Dict[str, t.Any]) -> t.Dict[str, t.Any]:
+        """Create a custom resource with specific data.
+
+        Args:
+            data: The data dictionary to send to the API
+
+        Returns:
+            The created resource entity
+        """
+        response = self.pulp_ctx.call(
+            operation_id="my_resource_create",
+            body=data,
+            validate_body=False,
+        )
+        return t.cast(t.Dict[str, t.Any], response)
+```
+
 ---
 
 ## Development Workflow
@@ -125,6 +157,8 @@ After installation, you can test your commands:
 ```bash
 pulp my-plugin my-command list --limit 10
 ```
+
+Consider writing tests for your commands as soon as you implement them. [testing doc](https://pulpproject.org/pulp-cli/docs/dev/guides/contributing/#testing)
 
 ---
 
