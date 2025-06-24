@@ -84,32 +84,6 @@ def mount(main: click.Group, **kwargs: t.Any) -> None:
     my_plugin_group.add_command(my_command_group)
     main.add_command(my_plugin_group)
 ```
-
-### Create Command plugins
-
-Create a new file for your commands, e.g., `pulpcore/cli/my_plugin/my_command.py`:
-
-```python
-import click
-from pulp_cli.common.context import pass_pulp_context
-from pulp_glue.common.context import PulpContext
-
-
-@click.group()
-def my_command_group():
-    """My custom commands."""
-    pass
-
-
-@my_command_group.command()
-@click.option("--limit", type=int, help="Limit the number of items")
-@pass_pulp_context
-def list(pulp_ctx: PulpContext, limit: int):
-    """List items."""
-    # Implement your command logic here
-    click.echo(f"Listing items with limit: {limit}")
-```
-
 ### Create API Context Classes
 
 Edit `pulp-glue-my-plugin/pulp_glue/my_plugin/context.py` to define context classes that handle API interactions:
@@ -141,6 +115,34 @@ class PulpMyResourceContext(PulpEntityContext):
         )
         return t.cast(t.Dict[str, t.Any], response)
 ```
+
+
+### Create Command plugins
+
+Create a new file for your commands, e.g., `pulpcore/cli/my_plugin/my_command.py`:
+
+```python
+import click
+from pulp_cli.common.context import pass_pulp_context
+from pulp_glue.common.context import PulpContext
+
+
+@click.group()
+def my_command_group():
+    """My custom commands."""
+    pass
+
+
+@my_command_group.command()
+@click.option("--limit", type=int, help="Limit the number of items")
+@pass_pulp_context
+def list(pulp_ctx: PulpContext, limit: int):
+    """List items."""
+    # Implement your command logic here
+    click.echo(f"Listing items with limit: {limit}")
+```
+
+
 
 ---
 
