@@ -95,11 +95,12 @@ from gettext import gettext as _
 from pulp_glue.common.context import PulpContext, PulpEntityContext
 
 
-class PulpMyResourceContext(PulpEntityContext):
+class PulpMyResourceContext():
     """Context for working with my custom resource."""
 
+    ID_PREFIX = "custom_component_prefix"
 
-    def create_custom_action(self, data: t.Dict[str, t.Any]) -> t.Dict[str, t.Any]:
+    def example_action(self, data: t.Dict[str, t.Any]) -> t.Dict[str, t.Any]:
         """Create a custom resource with specific data.
 
         Args:
@@ -109,7 +110,7 @@ class PulpMyResourceContext(PulpEntityContext):
             The created resource entity
         """
         response = self.pulp_ctx.call(
-            operation_id="my_resource_create",
+            operation_id="my_resource_example_action",
             body=data,
             validate_body=False,
         )
