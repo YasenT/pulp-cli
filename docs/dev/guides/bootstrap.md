@@ -53,6 +53,39 @@ The bootstrap process creates several important directories and files:
 
 ## Customizing Your Plugin
 
+### Create API Context Classes
+
+Edit `pulp-glue-my-plugin/pulp_glue/my_plugin/context.py` to define context classes that handle API interactions:
+
+```python
+import typing as t
+from gettext import gettext as _
+
+from pulp_glue.common.context import PulpContext, PulpEntityContext
+
+
+class PulpMyExampleContext():
+    """Context for working with my custom resource."""
+
+    ID_PREFIX = "example_component_prefix"
+
+    def example_action(self, data: t.Dict[str, t.Any]) -> t.Dict[str, t.Any]:
+        """Create a custom resource with specific data.
+
+        Args:
+            data: The data dictionary to send to the API
+
+        Returns:
+            The created resource entity
+        """
+        response = self.pulp_ctx.call(
+            operation_id="my_resource_example_action",
+            body=data,
+            validate_body=False,
+        )
+        return t.cast(t.Dict[str, t.Any], response)
+```
+
 ### Modify Command Group
 
 Edit `pulpcore/cli/my_plugin/__init__.py` to define your command groups and add functionality:
@@ -84,39 +117,6 @@ def mount(main: click.Group, **kwargs: t.Any) -> None:
     my_plugin_group.add_command(my_command_group)
     main.add_command(my_plugin_group)
 ```
-### Create API Context Classes
-
-Edit `pulp-glue-my-plugin/pulp_glue/my_plugin/context.py` to define context classes that handle API interactions:
-
-```python
-import typing as t
-from gettext import gettext as _
-
-from pulp_glue.common.context import PulpContext, PulpEntityContext
-
-
-class PulpMyResourceContext():
-    """Context for working with my custom resource."""
-
-    ID_PREFIX = "custom_component_prefix"
-
-    def example_action(self, data: t.Dict[str, t.Any]) -> t.Dict[str, t.Any]:
-        """Create a custom resource with specific data.
-
-        Args:
-            data: The data dictionary to send to the API
-
-        Returns:
-            The created resource entity
-        """
-        response = self.pulp_ctx.call(
-            operation_id="my_resource_example_action",
-            body=data,
-            validate_body=False,
-        )
-        return t.cast(t.Dict[str, t.Any], response)
-```
-
 
 ### Create Command plugins
 
@@ -126,24 +126,27 @@ Create a new file for your commands, e.g., `pulpcore/cli/my_plugin/my_command.py
 import click
 from pulp_cli.common.context import pass_pulp_context
 from pulp_glue.common.context import PulpContext
+from pulp_glue.my_plugin.context import PulpMyExampleContext
+from pulp_cli.common.generic import pass_entity_context
 
 
 @click.group()
-def my_command_group():
+@pass_pulp_context
+@click.pass_context 
+def my_command_group(ctx: click.Context, pulp_ctx: PulpContext, /) -> None:
     """My custom commands."""
-    pass
+    ctx.obj = PulpMyExampleContext(pulp_ctx)
 
 
 @my_command_group.command()
-@click.option("--limit", type=int, help="Limit the number of items")
+@click.option("--data", required=True, help="Data for the example action")
 @pass_pulp_context
-def list(pulp_ctx: PulpContext, limit: int):
-    """List items."""
-    # Implement your command logic here
-    click.echo(f"Listing items with limit: {limit}")
+def create(pulp_ctx: PulpContext, data: str):
+    """Create a new item using example action."""
+    my_example_ctx = PulpMyExampleContext(pulp_ctx)
+    result = my_example_ctx.example_action({"data": data})
+    pulp_ctx.output_result(result)
 ```
-
-
 
 ---
 
@@ -158,7 +161,7 @@ For installation instructions, see here (https://github.com/pulp/pulp-cli/blob/m
 After installation, you can test your commands:
 
 ```bash
-pulp my-plugin my-command list --limit 10
+pulp my-plugin my-command create --data "example"
 ```
 
 Consider writing tests for your commands as soon as you implement them. [testing doc](https://pulpproject.org/pulp-cli/docs/dev/guides/contributing/#testing)
