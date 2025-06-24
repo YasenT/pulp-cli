@@ -67,7 +67,7 @@ from pulp_glue.common.context import PulpContext, PulpEntityContext
 class PulpMyExampleContext():
     """Context for working with my custom resource."""
 
-    ID_PREFIX = "example_component_prefix"
+    ID_PREFIX = "my_resource"
 
     def example_action(self, data: t.Dict[str, t.Any]) -> t.Dict[str, t.Any]:
         """Create a custom resource with specific data.
@@ -78,7 +78,7 @@ class PulpMyExampleContext():
         Returns:
             The created resource entity
         """
-        response = self.pulp_ctx.call(
+        response = self.call(
             operation_id="my_resource_example_action",
             body=data,
             validate_body=False,
@@ -92,7 +92,6 @@ Edit `pulpcore/cli/my_plugin/__init__.py` to define your command groups and add 
 
 ```python
 import typing as t
-
 import click
 from pulp_cli.generic import pulp_group
 from pulp_glue.common.i18n import get_translation
@@ -141,6 +140,7 @@ def my_command_group(ctx: click.Context, pulp_ctx: PulpContext, /) -> None:
 @my_command_group.command()
 @click.option("--data", required=True, help="Data for the example action")
 @pass_pulp_context
+@pass_entity_context
 def create(pulp_ctx: PulpContext, data: str):
     """Create a new item using example action."""
     my_example_ctx = PulpMyExampleContext(pulp_ctx)
