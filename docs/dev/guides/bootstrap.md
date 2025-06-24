@@ -1,12 +1,12 @@
-# How to Create a Pulp CLI Plugin Using Cookiecutter
+# How to Create a Pulp CLI Plugin
 
-This guide shows you how to create a Pulp CLI plugin using the provided cookiecutter templates. Instead of manually creating all the required files, the cookiecutter bootstrap process will automatically generate the correct structure and files for you.
+This guide shows you how to create a Pulp CLI plugin using the provided bootstrap templates. Instead of manually creating all the required files, the bootstrap process will automatically generate the correct structure and files for you.
 
 ---
 
 ## Overview
 
-Pulp CLI plugin extend the functionality of the Pulp CLI by adding custom commands and features. The pulp-cli project includes cookiecutter templates that make it easy to bootstrap a new plugin with the correct structure and configuration.
+Pulp CLI plugin extend the functionality of the Pulp CLI by adding custom commands and features. The pulp-cli project includes templates that make it easy to bootstrap a new plugin with the correct structure and configuration.
 
 ---
 
@@ -139,4 +139,4 @@ cd pulp-cli-my-plugin
 
 ---
 
-By using the cookiecutter bootstrap process, you can set up a properly structured Pulp CLI plugin and focus on implementing your custom commands rather than worrying about project structure.
+By using the bootstrap process, you can set up a properly structured Pulp CLI plugin and focus on implementing your custom commands rather than worrying about project structure.
