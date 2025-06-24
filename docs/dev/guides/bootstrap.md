@@ -37,7 +37,7 @@ pulp-cli/cookiecutter/apply_templates.py --bootstrap
 
 ### Answer the Prompts
 
-You will be prompted for several values during the bootstrap process. The most important is **app_label**, which should match the Pulp component your plugin targets (for example, use `file` for `pulp-file`). This value determines the import paths and command names for your plugin. You will also see additional prompts for options such as glue integration, documentation, translations, version, repository URL, and CI configuration—answer these as appropriate for your project.
+You will be prompted for several values during the bootstrap process. The most important is **app_label**, which by convention (when applicable) should match the Pulp server component your plugin targets (for example, use `file` for `pulp-file`). This value determines the import paths and command names for your plugin. You will also see additional prompts for options such as glue integration, documentation, translations, version, repository URL, and CI configuration—answer these as appropriate for your project.
 
 ### Key Files and Directories
 
